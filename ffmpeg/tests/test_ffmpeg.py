@@ -19,10 +19,10 @@ except ImportError:
 
 TEST_DIR = os.path.dirname(__file__)
 SAMPLE_DATA_DIR = os.path.join(TEST_DIR, 'sample_data')
-TEST_INPUT_FILE1 = os.path.join(SAMPLE_DATA_DIR, 'in1.mp4')
+TEST_INPUT_FILE1 = os.path.join(SAMPLE_DATA_DIR, 'in1.ogv')
 TEST_OVERLAY_FILE = os.path.join(SAMPLE_DATA_DIR, 'overlay.png')
-TEST_OUTPUT_FILE1 = os.path.join(SAMPLE_DATA_DIR, 'out1.mp4')
-TEST_OUTPUT_FILE2 = os.path.join(SAMPLE_DATA_DIR, 'out2.mp4')
+TEST_OUTPUT_FILE1 = os.path.join(SAMPLE_DATA_DIR, 'out1.ogv')
+TEST_OUTPUT_FILE2 = os.path.join(SAMPLE_DATA_DIR, 'out2.ogv')
 BOGUS_INPUT_FILE = os.path.join(SAMPLE_DATA_DIR, 'bogus')
 
 
@@ -40,9 +40,9 @@ def test_escape_chars():
 
 
 def test_fluent_equality():
-    base1 = ffmpeg.input('dummy1.mp4')
-    base2 = ffmpeg.input('dummy1.mp4')
-    base3 = ffmpeg.input('dummy2.mp4')
+    base1 = ffmpeg.input('dummy1.ogv')
+    base2 = ffmpeg.input('dummy1.ogv')
+    base3 = ffmpeg.input('dummy2.ogv')
     t1 = base1.trim(start_frame=10, end_frame=20)
     t2 = base1.trim(start_frame=10, end_frame=20)
     t3 = base1.trim(start_frame=10, end_frame=30)
@@ -55,7 +55,7 @@ def test_fluent_equality():
 
 
 def test_fluent_concat():
-    base = ffmpeg.input('dummy.mp4')
+    base = ffmpeg.input('dummy.ogv')
     trimmed1 = base.trim(start_frame=10, end_frame=20)
     trimmed2 = base.trim(start_frame=30, end_frame=40)
     trimmed3 = base.trim(start_frame=50, end_frame=60)
@@ -67,27 +67,27 @@ def test_fluent_concat():
 
 
 def test_fluent_output():
-    ffmpeg.input('dummy.mp4').trim(start_frame=10, end_frame=20).output('dummy2.mp4')
+    ffmpeg.input('dummy.ogv').trim(start_frame=10, end_frame=20).output('dummy2.ogv')
 
 
 def test_fluent_complex_filter():
-    in_file = ffmpeg.input('dummy.mp4')
+    in_file = ffmpeg.input('dummy.ogv')
     return ffmpeg.concat(
         in_file.trim(start_frame=10, end_frame=20),
         in_file.trim(start_frame=30, end_frame=40),
         in_file.trim(start_frame=50, end_frame=60),
-    ).output('dummy2.mp4')
+    ).output('dummy2.ogv')
 
 
 def test_node_repr():
-    in_file = ffmpeg.input('dummy.mp4')
+    in_file = ffmpeg.input('dummy.ogv')
     trim1 = ffmpeg.trim(in_file, start_frame=10, end_frame=20)
     trim2 = ffmpeg.trim(in_file, start_frame=30, end_frame=40)
     trim3 = ffmpeg.trim(in_file, start_frame=50, end_frame=60)
     concatted = ffmpeg.concat(trim1, trim2, trim3)
-    output = ffmpeg.output(concatted, 'dummy2.mp4')
+    output = ffmpeg.output(concatted, 'dummy2.ogv')
     assert repr(in_file.node) == 'input(filename={!r}) <{}>'.format(
-        'dummy.mp4', in_file.node.short_hash
+        'dummy.ogv', in_file.node.short_hash
     )
     assert repr(trim1.node) == 'trim(end_frame=20, start_frame=10) <{}>'.format(
         trim1.node.short_hash
@@ -100,14 +100,14 @@ def test_node_repr():
     )
     assert repr(concatted.node) == 'concat(n=3) <{}>'.format(concatted.node.short_hash)
     assert repr(output.node) == 'output(filename={!r}) <{}>'.format(
-        'dummy2.mp4', output.node.short_hash
+        'dummy2.ogv', output.node.short_hash
     )
 
 
 def test_stream_repr():
-    in_file = ffmpeg.input('dummy.mp4')
+    in_file = ffmpeg.input('dummy.ogv')
     assert repr(in_file) == 'input(filename={!r})[None] <{}>'.format(
-        'dummy.mp4', in_file.node.short_hash
+        'dummy.ogv', in_file.node.short_hash
     )
     split0 = in_file.filter_multi_output('split')[0]
     assert repr(split0) == 'split()[0] <{}>'.format(split0.node.short_hash)
@@ -118,35 +118,35 @@ def test_stream_repr():
 
 
 def test_repeated_args():
-    out_file = ffmpeg.input('dummy.mp4').output(
-        'dummy2.mp4', streamid=['0:0x101', '1:0x102']
+    out_file = ffmpeg.input('dummy.ogv').output(
+        'dummy2.ogv', streamid=['0:0x101', '1:0x102']
     )
     assert out_file.get_args() == [
         '-i',
-        'dummy.mp4',
+        'dummy.ogv',
         '-streamid',
         '0:0x101',
         '-streamid',
         '1:0x102',
-        'dummy2.mp4',
+        'dummy2.ogv',
     ]
 
 
 def test__get_args__simple():
-    out_file = ffmpeg.input('dummy.mp4').output('dummy2.mp4')
-    assert out_file.get_args() == ['-i', 'dummy.mp4', 'dummy2.mp4']
+    out_file = ffmpeg.input('dummy.ogv').output('dummy2.ogv')
+    assert out_file.get_args() == ['-i', 'dummy.ogv', 'dummy2.ogv']
 
 
 def test_global_args():
     out_file = (
-        ffmpeg.input('dummy.mp4')
-        .output('dummy2.mp4')
+        ffmpeg.input('dummy.ogv')
+        .output('dummy2.ogv')
         .global_args('-progress', 'someurl')
     )
     assert out_file.get_args() == [
         '-i',
-        'dummy.mp4',
-        'dummy2.mp4',
+        'dummy.ogv',
+        'dummy2.ogv',
         '-progress',
         'someurl',
     ]
@@ -272,62 +272,62 @@ def _get_complex_filter_asplit_example():
 
 
 def test_filter_concat__video_only():
-    in1 = ffmpeg.input('in1.mp4')
-    in2 = ffmpeg.input('in2.mp4')
-    args = ffmpeg.concat(in1, in2).output('out.mp4').get_args()
+    in1 = ffmpeg.input('in1.ogv')
+    in2 = ffmpeg.input('in2.ogv')
+    args = ffmpeg.concat(in1, in2).output('out.ogv').get_args()
     assert args == [
         '-i',
-        'in1.mp4',
+        'in1.ogv',
         '-i',
-        'in2.mp4',
+        'in2.ogv',
         '-filter_complex',
         '[0][1]concat=n=2[s0]',
         '-map',
         '[s0]',
-        'out.mp4',
+        'out.ogv',
     ]
 
 
 def test_filter_concat__audio_only():
-    in1 = ffmpeg.input('in1.mp4')
-    in2 = ffmpeg.input('in2.mp4')
-    args = ffmpeg.concat(in1, in2, v=0, a=1).output('out.mp4').get_args()
+    in1 = ffmpeg.input('in1.ogv')
+    in2 = ffmpeg.input('in2.ogv')
+    args = ffmpeg.concat(in1, in2, v=0, a=1).output('out.ogv').get_args()
     assert args == [
         '-i',
-        'in1.mp4',
+        'in1.ogv',
         '-i',
-        'in2.mp4',
+        'in2.ogv',
         '-filter_complex',
         '[0][1]concat=a=1:n=2:v=0[s0]',
         '-map',
         '[s0]',
-        'out.mp4',
+        'out.ogv',
     ]
 
 
 def test_filter_concat__audio_video():
-    in1 = ffmpeg.input('in1.mp4')
-    in2 = ffmpeg.input('in2.mp4')
+    in1 = ffmpeg.input('in1.ogv')
+    in2 = ffmpeg.input('in2.ogv')
     joined = ffmpeg.concat(in1.video, in1.audio, in2.hflip(), in2['a'], v=1, a=1).node
-    args = ffmpeg.output(joined[0], joined[1], 'out.mp4').get_args()
+    args = ffmpeg.output(joined[0], joined[1], 'out.ogv').get_args()
     assert args == [
         '-i',
-        'in1.mp4',
+        'in1.ogv',
         '-i',
-        'in2.mp4',
+        'in2.ogv',
         '-filter_complex',
         '[1]hflip[s0];[0:v][0:a][s0][1:a]concat=a=1:n=2:v=1[s1][s2]',
         '-map',
         '[s1]',
         '-map',
         '[s2]',
-        'out.mp4',
+        'out.ogv',
     ]
 
 
 def test_filter_concat__wrong_stream_count():
-    in1 = ffmpeg.input('in1.mp4')
-    in2 = ffmpeg.input('in2.mp4')
+    in1 = ffmpeg.input('in1.ogv')
+    in2 = ffmpeg.input('in2.ogv')
     with pytest.raises(ValueError) as excinfo:
         ffmpeg.concat(in1.video, in1.audio, in2.hflip(), v=1, a=1).node
     assert (
@@ -454,13 +454,13 @@ def test_filter_text_arg_str_escape():
 
 
 def test__compile():
-    out_file = ffmpeg.input('dummy.mp4').output('dummy2.mp4')
-    assert out_file.compile() == ['ffmpeg', '-i', 'dummy.mp4', 'dummy2.mp4']
+    out_file = ffmpeg.input('dummy.ogv').output('dummy2.ogv')
+    assert out_file.compile() == ['ffmpeg', '-i', 'dummy.ogv', 'dummy2.ogv']
     assert out_file.compile(cmd='ffmpeg.old') == [
         'ffmpeg.old',
         '-i',
-        'dummy.mp4',
-        'dummy2.mp4',
+        'dummy.ogv',
+        'dummy2.ogv',
     ]
 
 
@@ -567,48 +567,48 @@ def test__run__dummy_cmd_list():
 
 
 def test__filter__custom():
-    stream = ffmpeg.input('dummy.mp4')
+    stream = ffmpeg.input('dummy.ogv')
     stream = ffmpeg.filter(stream, 'custom_filter', 'a', 'b', kwarg1='c')
-    stream = ffmpeg.output(stream, 'dummy2.mp4')
+    stream = ffmpeg.output(stream, 'dummy2.ogv')
     assert stream.get_args() == [
         '-i',
-        'dummy.mp4',
+        'dummy.ogv',
         '-filter_complex',
         '[0]custom_filter=a:b:kwarg1=c[s0]',
         '-map',
         '[s0]',
-        'dummy2.mp4',
+        'dummy2.ogv',
     ]
 
 
 def test__filter__custom_fluent():
     stream = (
-        ffmpeg.input('dummy.mp4')
+        ffmpeg.input('dummy.ogv')
         .filter('custom_filter', 'a', 'b', kwarg1='c')
-        .output('dummy2.mp4')
+        .output('dummy2.ogv')
     )
     assert stream.get_args() == [
         '-i',
-        'dummy.mp4',
+        'dummy.ogv',
         '-filter_complex',
         '[0]custom_filter=a:b:kwarg1=c[s0]',
         '-map',
         '[s0]',
-        'dummy2.mp4',
+        'dummy2.ogv',
     ]
 
 
 def test__merge_outputs():
-    in_ = ffmpeg.input('in.mp4')
-    out1 = in_.output('out1.mp4')
-    out2 = in_.output('out2.mp4')
+    in_ = ffmpeg.input('in.ogv')
+    out1 = in_.output('out1.ogv')
+    out2 = in_.output('out2.ogv')
     assert ffmpeg.merge_outputs(out1, out2).get_args() == [
         '-i',
-        'in.mp4',
-        'out1.mp4',
-        'out2.mp4',
+        'in.ogv',
+        'out1.ogv',
+        'out2.ogv',
     ]
-    assert ffmpeg.get_args([out1, out2]) == ['-i', 'in.mp4', 'out2.mp4', 'out1.mp4']
+    assert ffmpeg.get_args([out1, out2]) == ['-i', 'in.ogv', 'out2.ogv', 'out1.ogv']
 
 
 def test__input__start_time():
@@ -629,28 +629,28 @@ def test__input__start_time():
 
 
 def test_multi_passthrough():
-    out1 = ffmpeg.input('in1.mp4').output('out1.mp4')
-    out2 = ffmpeg.input('in2.mp4').output('out2.mp4')
+    out1 = ffmpeg.input('in1.ogv').output('out1.ogv')
+    out2 = ffmpeg.input('in2.ogv').output('out2.ogv')
     out = ffmpeg.merge_outputs(out1, out2)
     assert ffmpeg.get_args(out) == [
         '-i',
-        'in1.mp4',
+        'in1.ogv',
         '-i',
-        'in2.mp4',
-        'out1.mp4',
+        'in2.ogv',
+        'out1.ogv',
         '-map',
         '1',
-        'out2.mp4',
+        'out2.ogv',
     ]
     assert ffmpeg.get_args([out1, out2]) == [
         '-i',
-        'in2.mp4',
+        'in2.ogv',
         '-i',
-        'in1.mp4',
-        'out2.mp4',
+        'in1.ogv',
+        'out2.ogv',
         '-map',
         '1',
-        'out1.mp4',
+        'out1.ogv',
     ]
 
 
@@ -746,7 +746,7 @@ def test_pipe():
 def test__probe():
     data = ffmpeg.probe(TEST_INPUT_FILE1)
     assert set(data.keys()) == {'format', 'streams'}
-    assert data['format']['duration'] == '7.036000'
+    assert data['format']['duration'] == '10.200000'
 
 
 @pytest.mark.skipif(sys.version_info < (3, 3), reason='requires python3.3 or higher')
